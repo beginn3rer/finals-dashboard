@@ -141,14 +141,28 @@ body {
   font-size: 13px; color: var(--text-faint); margin-top: 2px;
   letter-spacing: 0.04em;
 }
-.theme-toggle {
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  position: relative;
   background: var(--panel); border: 1px solid var(--border);
   color: var(--text); width: 38px; height: 38px;
   border-radius: 10px; cursor: pointer; font-size: 16px;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s;
+  font-family: inherit;
 }
-.theme-toggle:hover { border-color: var(--border-strong); transform: scale(1.05) rotate(15deg); }
+.icon-btn:hover { border-color: var(--border-strong); transform: scale(1.05); }
+.icon-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.icon-btn .running-dot {
+  position: absolute; top: 5px; right: 5px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--c-red);
+  box-shadow: 0 0 8px var(--c-red);
+  animation: pulse 1.5s infinite;
+  display: none;
+}
+.icon-btn.pomo-running .running-dot { display: block; }
+.theme-toggle:hover { transform: scale(1.05) rotate(15deg); }
 
 /* Hero — Next up */
 .hero { margin-bottom: 56px; }
@@ -611,115 +625,185 @@ footer .quote {
 }
 @keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
 
-/* ---------- POMODORO WIDGET ---------- */
-.pomo {
-  position: fixed;
-  bottom: 24px; right: 24px;
+/* ---------- SETTINGS MENU (pomo + reorder) ---------- */
+.menu-overlay {
+  position: fixed; inset: 0;
+  background: transparent;
   z-index: 90;
+  display: none;
+}
+.menu-overlay.open { display: block; }
+.settings-menu {
+  position: fixed;
+  top: 76px; right: 24px;
+  width: 340px; max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.10), 0 2px 10px rgba(0,0,0,0.06);
-  min-width: 220px;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.05);
+  z-index: 95;
+  display: none;
+  transform-origin: top right;
 }
-[data-theme="dark"] .pomo {
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+[data-theme="dark"] .settings-menu {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
 }
-.pomo.minimal {
-  min-width: auto; padding: 10px 14px;
-  display: flex; align-items: center; gap: 10px;
-  border-radius: 999px;
+.settings-menu.open {
+  display: block;
+  animation: menuOpen 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.pomo-head {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 10px;
+@keyframes menuOpen {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.pomo.minimal .pomo-head { margin: 0; }
-.pomo-mode {
-  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-  font-weight: 700; color: var(--text-faint);
-  display: flex; align-items: center; gap: 6px;
+.settings-section + .settings-section {
+  margin-top: 20px; padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
-.pomo-mode::before {
-  content: ""; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--pomo-color, var(--text-faint));
-  box-shadow: 0 0 8px var(--pomo-color, transparent);
+.settings-section h4 {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 700;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
 }
-.pomo.mode-focus       { --pomo-color: var(--c-red); }
-.pomo.mode-short-break { --pomo-color: var(--c-green); }
-.pomo.mode-long-break  { --pomo-color: var(--c-blue); }
-.pomo.mode-focus       .pomo-mode { color: var(--c-red); }
-.pomo.mode-short-break .pomo-mode { color: var(--c-green); }
-.pomo.mode-long-break  .pomo-mode { color: var(--c-blue); }
-.pomo-collapse {
-  background: none; border: none; cursor: pointer;
-  color: var(--text-faint); font-size: 16px;
-  width: 22px; height: 22px;
-  display: flex; align-items: center; justify-content: center;
+.settings-section h4::before {
+  content: ""; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--section-dot, var(--text-faint));
+  box-shadow: 0 0 6px var(--section-dot, transparent);
 }
-.pomo-display {
-  font-size: 38px; font-weight: 600;
+.settings-section.pomo-section h4    { --section-dot: var(--c-red); }
+.settings-section.reorder-section h4 { --section-dot: var(--c-blue); }
+
+/* Menu pomodoro */
+.menu-pomo {
+  background: var(--soft); border-radius: 12px;
+  padding: 16px;
+}
+.menu-pomo-display {
+  font-size: 36px; font-weight: 600;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-  color: var(--text-strong);
+  letter-spacing: -0.03em; line-height: 1;
   text-align: center;
-  line-height: 1; margin-bottom: 4px;
+  color: var(--text-strong);
 }
-.pomo.minimal .pomo-display {
-  font-size: 22px; margin: 0;
+.menu-pomo-mode {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 700;
+  text-align: center;
+  margin: 6px 0 12px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.pomo-progress {
-  height: 4px; background: var(--soft);
+.menu-pomo-mode::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pomo-color, var(--c-red));
+  box-shadow: 0 0 6px var(--pomo-color, transparent);
+}
+.menu-pomo.mode-focus       { --pomo-color: var(--c-red); }
+.menu-pomo.mode-short-break { --pomo-color: var(--c-green); }
+.menu-pomo.mode-long-break  { --pomo-color: var(--c-blue); }
+.menu-pomo.mode-focus       .menu-pomo-mode { color: var(--c-red); }
+.menu-pomo.mode-short-break .menu-pomo-mode { color: var(--c-green); }
+.menu-pomo.mode-long-break  .menu-pomo-mode { color: var(--c-blue); }
+.menu-pomo-progress {
+  height: 4px; background: var(--border);
   border-radius: 99px; overflow: hidden;
-  margin: 10px 0 12px;
+  margin: 0 0 12px;
 }
-.pomo.minimal .pomo-progress { display: none; }
-.pomo-progress-fill {
+.menu-pomo-progress-fill {
   height: 100%; background: var(--pomo-color, var(--c-red));
   border-radius: 99px;
   transition: width 0.5s linear;
   box-shadow: 0 0 8px var(--pomo-color, transparent);
 }
-.pomo-controls { display: flex; gap: 6px; }
-.pomo.minimal .pomo-controls { gap: 4px; }
 .pomo-btn {
-  flex: 1; padding: 8px 10px;
+  padding: 7px 10px;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
-  background: transparent; color: var(--text);
-  cursor: pointer;
-  transition: all 0.15s;
+  background: var(--panel); color: var(--text);
+  cursor: pointer; transition: all 0.15s;
   font-family: inherit;
 }
 .pomo-btn:hover {
   background: var(--pomo-color, var(--c-red));
-  color: white;
-  border-color: var(--pomo-color, var(--c-red));
+  color: white; border-color: var(--pomo-color, var(--c-red));
 }
 .pomo-btn.primary {
   background: var(--pomo-color, var(--c-red));
-  color: white;
-  border-color: var(--pomo-color, var(--c-red));
+  color: white; border-color: var(--pomo-color, var(--c-red));
 }
 .pomo-btn.primary:hover { filter: brightness(1.15); }
-.pomo.minimal .pomo-btn {
-  padding: 6px 12px; font-size: 10px;
-  flex: none;
-}
-.pomo-stat {
+.menu-pomo-controls { display: flex; gap: 6px; }
+.menu-pomo-controls .pomo-btn { flex: 1; }
+.menu-pomo-stat {
   margin-top: 10px;
-  font-size: 11px; letter-spacing: 0.05em;
-  color: var(--text-faint); text-align: center;
+  font-size: 11px; color: var(--text-faint);
+  text-align: center;
 }
-.pomo.minimal .pomo-stat { display: none; }
+
+/* Reorder */
+.reorder-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.reorder-tab {
+  flex: 1; padding: 6px 10px;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  font-weight: 700;
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer; transition: all 0.15s;
+  font-family: inherit;
+}
+.reorder-tab.active {
+  background: var(--accent); color: var(--bg);
+  border-color: var(--accent);
+}
+.reorder-list { display: flex; flex-direction: column; gap: 4px; }
+.reorder-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: var(--soft);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+.reorder-row .rdot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--dot, var(--text-faint));
+  flex-shrink: 0;
+  box-shadow: 0 0 6px var(--dot, transparent);
+}
+.reorder-row .rname {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 500;
+}
+.reorder-row .rname .rcode {
+  font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 700;
+  margin-right: 4px;
+}
+.reorder-btn {
+  width: 24px; height: 24px;
+  background: var(--panel); color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: 5px; cursor: pointer;
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.reorder-btn:hover:not(:disabled) {
+  background: var(--accent); color: var(--bg);
+  border-color: var(--accent);
+}
+.reorder-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
 @media (max-width: 600px) {
-  .pomo { bottom: 12px; right: 12px; left: 12px; min-width: auto; }
+  .settings-menu { right: 16px; left: 16px; width: auto; }
 }
 
 /* ---------- FOCUS OVERLAY ---------- */
@@ -919,7 +1003,10 @@ footer .quote {
       <div class="brand-name"><span class="brand-dot"></span>Jacob · Finals</div>
       <div class="brand-date" id="today-date">—</div>
     </div>
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle dark mode"><span id="theme-icon">☾</span></button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu" title="Menu (pomodoro + reorder)">⋮<span class="running-dot"></span></button>
+      <button class="icon-btn theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle dark mode"><span id="theme-icon">☾</span></button>
+    </div>
   </header>
 
   <section class="hero">
@@ -970,20 +1057,31 @@ footer .quote {
   </footer>
 </div>
 
-<!-- Pomodoro widget (persistent) -->
-<div class="pomo mode-focus" id="pomo">
-  <div class="pomo-head">
-    <div class="pomo-mode" id="pomo-mode-mini">Focus</div>
-    <button class="pomo-collapse" id="pomo-collapse" title="Collapse">⊟</button>
+<!-- Menu (pomodoro + reorder) -->
+<div class="menu-overlay" id="menu-overlay"></div>
+<div class="settings-menu" id="settings-menu">
+  <div class="settings-section pomo-section">
+    <h4>Pomodoro</h4>
+    <div class="menu-pomo mode-focus" id="menu-pomo">
+      <div class="menu-pomo-display" id="menu-pomo-display">25:00</div>
+      <div class="menu-pomo-mode"><span id="menu-pomo-mode-text">Focus</span></div>
+      <div class="menu-pomo-progress"><div class="menu-pomo-progress-fill" id="menu-pomo-progress" style="width:0%"></div></div>
+      <div class="menu-pomo-controls">
+        <button class="pomo-btn primary" id="menu-pomo-start">Start</button>
+        <button class="pomo-btn" id="menu-pomo-reset">Reset</button>
+        <button class="pomo-btn" id="menu-pomo-skip">Skip</button>
+      </div>
+      <div class="menu-pomo-stat" id="menu-pomo-stat">0 done today</div>
+    </div>
   </div>
-  <div class="pomo-display" id="pomo-display">25:00</div>
-  <div class="pomo-progress"><div class="pomo-progress-fill" id="pomo-progress" style="width:0%"></div></div>
-  <div class="pomo-controls">
-    <button class="pomo-btn primary" id="pomo-start">Start</button>
-    <button class="pomo-btn" id="pomo-reset">Reset</button>
-    <button class="pomo-btn" id="pomo-skip">Skip</button>
+  <div class="settings-section reorder-section">
+    <h4>Reorder cards</h4>
+    <div class="reorder-tabs">
+      <button class="reorder-tab active" data-rtab="exams">Exams</button>
+      <button class="reorder-tab" data-rtab="hw">Homework</button>
+    </div>
+    <div class="reorder-list" id="reorder-list"></div>
   </div>
-  <div class="pomo-stat" id="pomo-stat">0 done today</div>
 </div>
 
 <!-- Focus overlay -->
@@ -1138,6 +1236,13 @@ function flashSync() {
 
 function applyTaskUpdate(t) {
   const ts = t.completed_at || new Date().toISOString();
+  // Propagate sort_order changes from other devices
+  if (t.sort_order !== undefined && t.sort_order !== null) {
+    for (const arr of [EXAMS, HW]) {
+      const local = arr.find(x => x.id === t.id);
+      if (local) local.sort_order = t.sort_order;
+    }
+  }
   if (t.type === 'exam') {
     if (t.completed) state.examsDone[t.id] = ts; else delete state.examsDone[t.id];
   } else if (t.type === 'hw') {
@@ -1550,25 +1655,43 @@ function pomoSkip() { pomoComplete(); }
 
 function renderPomo() {
   checkPomoDailyReset();
-  const pomoEl = document.getElementById("pomo");
-  pomoEl.classList.remove("mode-focus","mode-short-break","mode-long-break");
-  pomoEl.classList.add("mode-" + state.pomo.mode);
-  if (state.pomo.collapsed) pomoEl.classList.add("minimal"); else pomoEl.classList.remove("minimal");
+  const menuPomoEl = document.getElementById("menu-pomo");
+  if (menuPomoEl) {
+    menuPomoEl.classList.remove("mode-focus","mode-short-break","mode-long-break");
+    menuPomoEl.classList.add("mode-" + state.pomo.mode);
+  }
 
   const left = pomoTimeLeft();
-  document.getElementById("pomo-display").textContent   = `${pad(Math.floor(left/60))}:${pad(left%60)}`;
-  document.getElementById("pomo-mode-mini").textContent = POMO_LABELS[state.pomo.mode];
-  document.getElementById("pomo-start").textContent     = state.pomo.endsAt ? "Pause" : "Start";
-  document.getElementById("pomo-stat").textContent      = state.pomo.completedToday === 1 ? "1 done today" : `${state.pomo.completedToday} done today`;
+  const timeStr = `${pad(Math.floor(left/60))}:${pad(left%60)}`;
+  const startLabel = state.pomo.endsAt ? "Pause" : "Start";
+  const statLabel  = state.pomo.completedToday === 1 ? "1 done today" : `${state.pomo.completedToday} done today`;
   const total = POMO_DURATIONS[state.pomo.mode];
-  document.getElementById("pomo-progress").style.width  = ((total - left) / total * 100) + "%";
+  const pctW  = ((total - left) / total * 100) + "%";
 
+  // Menu pomo
+  const mDisplay = document.getElementById("menu-pomo-display");
+  if (mDisplay) {
+    mDisplay.textContent = timeStr;
+    document.getElementById("menu-pomo-mode-text").textContent = POMO_LABELS[state.pomo.mode];
+    document.getElementById("menu-pomo-start").textContent = startLabel;
+    document.getElementById("menu-pomo-stat").textContent  = statLabel;
+    document.getElementById("menu-pomo-progress").style.width = pctW;
+  }
+
+  // Running indicator on menu button
+  const menuBtn = document.getElementById("menu-btn");
+  if (menuBtn) {
+    if (state.pomo.endsAt) menuBtn.classList.add("pomo-running");
+    else menuBtn.classList.remove("pomo-running");
+  }
+
+  // Focus view pomo (if open)
   const fd = document.getElementById("focus-pomo-display");
   if (fd) {
-    fd.textContent = `${pad(Math.floor(left/60))}:${pad(left%60)}`;
+    fd.textContent = timeStr;
     document.getElementById("focus-pomo-mode-text").textContent = POMO_LABELS[state.pomo.mode];
     document.getElementById("focus-pomo-stat").textContent = state.pomo.completedToday === 1 ? "1 pomodoro today" : `${state.pomo.completedToday} pomodoros today`;
-    document.getElementById("focus-pomo-start").textContent = state.pomo.endsAt ? "Pause" : "Start";
+    document.getElementById("focus-pomo-start").textContent = startLabel;
     const fpomoEl = document.getElementById("focus-pomo");
     fpomoEl.classList.remove("mode-focus","mode-short-break","mode-long-break");
     fpomoEl.classList.add("mode-" + state.pomo.mode);
@@ -1592,10 +1715,90 @@ function playBeep(freq, duration) {
   } catch(e) {}
 }
 
-document.getElementById("pomo-start").onclick   = () => state.pomo.endsAt ? pomoPause() : pomoStart();
-document.getElementById("pomo-reset").onclick   = pomoReset;
-document.getElementById("pomo-skip").onclick    = pomoSkip;
-document.getElementById("pomo-collapse").onclick = () => { state.pomo.collapsed = !state.pomo.collapsed; save(); renderPomo(); };
+document.getElementById("menu-pomo-start").onclick = () => state.pomo.endsAt ? pomoPause() : pomoStart();
+document.getElementById("menu-pomo-reset").onclick = pomoReset;
+document.getElementById("menu-pomo-skip").onclick  = pomoSkip;
+
+// ================================================================
+// Settings menu (pomo + reorder)
+// ================================================================
+let menuOpen = false;
+let reorderTab = "exams";
+
+function openMenu() {
+  document.getElementById("settings-menu").classList.add("open");
+  document.getElementById("menu-overlay").classList.add("open");
+  document.getElementById("menu-btn").classList.add("active");
+  menuOpen = true;
+  renderReorderList();
+  renderPomo();
+}
+function closeMenu() {
+  document.getElementById("settings-menu").classList.remove("open");
+  document.getElementById("menu-overlay").classList.remove("open");
+  document.getElementById("menu-btn").classList.remove("active");
+  menuOpen = false;
+}
+document.getElementById("menu-btn").onclick = (e) => { e.stopPropagation(); menuOpen ? closeMenu() : openMenu(); };
+document.getElementById("menu-overlay").onclick = closeMenu;
+document.addEventListener("keydown", e => { if (e.key === "Escape" && menuOpen) closeMenu(); });
+document.querySelectorAll(".reorder-tab").forEach(tab => {
+  tab.onclick = () => {
+    reorderTab = tab.dataset.rtab;
+    document.querySelectorAll(".reorder-tab").forEach(t => t.classList.toggle("active", t === tab));
+    renderReorderList();
+  };
+});
+
+function renderReorderList() {
+  const host = document.getElementById("reorder-list");
+  const list = reorderTab === "exams" ? EXAMS : HW;
+  const items = [...list].sort((a, b) => a.sort_order - b.sort_order);
+  host.innerHTML = items.map((item, idx) => {
+    const codeStr  = reorderTab === "exams" ? item.code : item.code.split(" · ")[0];
+    const titleStr = item.title;
+    return `
+      <div class="reorder-row">
+        <span class="rdot" style="--dot: ${item.color}"></span>
+        <div class="rname"><span class="rcode">${codeStr}</span>${titleStr}</div>
+        <button class="reorder-btn" data-rmove="up"   data-rid="${item.id}" ${idx === 0 ? 'disabled' : ''} aria-label="Move up">▲</button>
+        <button class="reorder-btn" data-rmove="down" data-rid="${item.id}" ${idx === items.length - 1 ? 'disabled' : ''} aria-label="Move down">▼</button>
+      </div>
+    `;
+  }).join("");
+
+  host.querySelectorAll("[data-rmove]").forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.rid;
+      const dir = btn.dataset.rmove;
+      await moveItem(reorderTab, id, dir);
+      renderReorderList();
+      if (reorderTab === "exams") renderCards();
+      else renderHW();
+    };
+  });
+}
+
+// Swap sort_order in both the local array and Supabase (cross-device)
+async function moveItem(tab, id, direction) {
+  const list = tab === "exams" ? EXAMS : HW;
+  const sorted = [...list].sort((a, b) => a.sort_order - b.sort_order);
+  const idx = sorted.findIndex(x => x.id === id);
+  if (idx < 0) return;
+  const newIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (newIdx < 0 || newIdx >= sorted.length) return;
+  const a = sorted[idx], b = sorted[newIdx];
+  const tmp = a.sort_order;
+  a.sort_order = b.sort_order;
+  b.sort_order = tmp;
+  // Persist to Supabase (fire-and-forget; realtime will not interfere because we already updated locally)
+  try {
+    await Promise.all([
+      sb.from('tasks').update({ sort_order: a.sort_order }).eq('id', a.id),
+      sb.from('tasks').update({ sort_order: b.sort_order }).eq('id', b.id)
+    ]);
+  } catch (e) { console.error('Reorder sync failed', e); }
+}
 
 // ================================================================
 // Focus Overlay
