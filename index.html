@@ -1060,17 +1060,18 @@ async function loadFromSupabase() {
 
     if (t.type === 'exam') {
       EXAMS.push({
-        id:        t.id,
-        code:      t.course || '',
-        title:     t.title,
-        questions: t.tag    || '',
-        location:  t.location || '',
-        start:     t.start_date,
-        end:       t.end_date || t.due_date,
-        deadline:  t.due_date,
-        color:     t.color_var || 'var(--text)',
-        notes:     t.notes || '',
-        prep:      taskItems.map(i => i.label)
+        id:         t.id,
+        code:       t.course || '',
+        title:      t.title,
+        questions:  t.tag    || '',
+        location:   t.location || '',
+        start:      t.start_date,
+        end:        t.end_date || t.due_date,
+        deadline:   t.due_date,
+        color:      t.color_var || 'var(--text)',
+        notes:      t.notes || '',
+        prep:       taskItems.map(i => i.label),
+        sort_order: t.sort_order ?? 99
       });
       if (t.completed) state.examsDone[t.id] = t.completed_at || new Date().toISOString();
       for (const item of taskItems) {
@@ -1079,13 +1080,14 @@ async function loadFromSupabase() {
 
     } else if (t.type === 'hw') {
       HW.push({
-        id:       t.id,
-        code:     t.course || '',
-        title:    t.title,
-        note:     t.notes  || '',
-        deadline: t.due_date,
-        color:    t.color_var || 'var(--text)',
-        subtasks: taskItems.length
+        id:         t.id,
+        code:       t.course || '',
+        title:      t.title,
+        note:       t.notes  || '',
+        deadline:   t.due_date,
+        color:      t.color_var || 'var(--text)',
+        sort_order: t.sort_order ?? 99,
+        subtasks:   taskItems.length
           ? taskItems.map(i => ({ id: i.id.replace(t.id + ':', ''), label: i.label }))
           : undefined
       });
@@ -1261,7 +1263,7 @@ function prepPct(exam) {
 function renderCards() {
   const host = document.getElementById("exam-list");
   host.innerHTML = "";
-  const sorted = [...EXAMS].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  const sorted = [...EXAMS].sort((a, b) => a.sort_order - b.sort_order);
   sorted.forEach(exam => {
     const done = !!state.examsDone[exam.id];
     const stat = statusFor(exam, done);
@@ -1339,7 +1341,7 @@ function renderCards() {
 function renderHW() {
   const host = document.getElementById("hw-list");
   host.innerHTML = "";
-  const sorted = [...HW].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  const sorted = [...HW].sort((a, b) => a.sort_order - b.sort_order);
   sorted.forEach(hw => {
     const done   = !!state.hwDone[hw.id];
     const due    = dueFor(hw.deadline, done);
