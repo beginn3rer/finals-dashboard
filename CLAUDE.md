@@ -1,198 +1,235 @@
-# Finals Dashboard — Claude Code Guide
+# Finals Dashboard — Claude Code Cowork Guide
 
-## Project overview
+This file is written for Claude Code. When Jacob opens a session on this repo,
+read this file first, run the orientation steps, then wait for his request.
 
-A live, mobile-friendly finals dashboard for Jacob Wasserman (Spring 2026).
-Single HTML file + no build step. Data lives in Supabase; the page is hosted
-on GitHub Pages. Checking a box on one device instantly syncs to all others
-via Supabase Realtime.
+---
 
-**Live URL:** https://beginn3rer.github.io/finals-dashboard/
-**Repo:** https://github.com/beginn3rer/finals-dashboard
-**Local clone:** /Users/jacobwasserman/finals-dashboard/
+## Who this is for
 
-## File map
+**Jacob Wasserman** — undergraduate econ/astro student at Hunter/BMCC.
+This is his live finals-week dashboard. It tracks exams, homework, and reminders
+across his phone and iPad in real time via Supabase.
 
+---
+
+## Orientation (do this at the start of every session)
+
+```bash
+cd /Users/jacobwasserman/finals-dashboard
+git status          # make sure working tree is clean
+git pull origin main  # get any remote changes first
 ```
-index.html   — the entire app (CSS + HTML + JS, ~1900 lines)
-schema.sql   — Supabase schema, RLS policies, and seed data (run once)
+
+Then read the current state of `index.html` if the request involves code changes.
+For data-only changes (deadlines, new tasks), you only need the SQL snippets below.
+
+---
+
+## Project snapshot
+
+| Thing | Value |
+|---|---|
+| Live URL | https://beginn3rer.github.io/finals-dashboard/ |
+| Repo | https://github.com/beginn3rer/finals-dashboard |
+| Local path | /Users/jacobwasserman/finals-dashboard/ |
+| Stack | Single `index.html` — CSS + HTML + JS. No build step, no npm. |
+| Database | Supabase (Postgres). Project: `mpwuwyxmfiosoeylxopy.supabase.co` |
+| Hosting | GitHub Pages, auto-deploys from `main` branch |
+| Auth | None — anon RLS policies, personal use only |
+
+**Files:**
+```
+index.html   — the entire app (~1900 lines: CSS → HTML → JS)
+schema.sql   — Supabase schema + seed SQL (already run; keep for reference)
 CLAUDE.md    — this file
 ```
 
-There is no `node_modules`, no `package.json`, no build step. Everything runs
-from the browser against the CDN-loaded Supabase JS client.
+---
 
-## Supabase
+## Supabase credentials (safe to use, never replace with secret key)
 
-**Project URL:** https://mpwuwyxmfiosoeylxopy.supabase.co
-**Publishable key:** sb_publishable_5vLlPrgF5cp_U5NCOJH4zw_xx5p3BYq
-(This is the anon/public key — safe to be in source. Never commit the secret key.)
-
-### Tables
-
-**`tasks`** — one row per exam, HW assignment, or reminder
-| column | type | notes |
-|---|---|---|
-| id | text PK | e.g. `env-econ`, `honors-paper` |
-| type | text | `'exam'` \| `'hw'` \| `'reminder'` |
-| course | text | e.g. `ECO 39556` |
-| title | text | display name |
-| notes | text | HTML allowed (bold, links) |
-| due_date | timestamptz | deadline / window close |
-| start_date | timestamptz | exam window open (exams only) |
-| end_date | timestamptz | same as due_date for most exams |
-| location | text | room or URL |
-| color_var | text | CSS variable e.g. `var(--c-env-econ)` |
-| tag | text | exam format string OR reminder tag label |
-| urgency | text | `now`\|`today`\|`tonight`\|`tomorrow`\|`day`\|`week` (reminders) |
-| completed | boolean | false by default |
-| completed_at | timestamptz | set when completed |
-| created_at | timestamptz | auto |
-| sort_order | int | controls display order (lower = higher on page) |
-
-**`task_items`** — prep checklist items (exams) and subtasks (HW)
-| column | type | notes |
-|---|---|---|
-| id | text PK | format: `task_id:index` or `task_id:subtask-key` |
-| task_id | text FK | references tasks(id) |
-| label | text | display text |
-| sort_order | int | order within the parent task |
-| completed | boolean | false by default |
-| completed_at | timestamptz | set when completed |
-
-### How completion sync works
-
-1. User checks a box → `toggle(bucket, id)` in JS
-2. `toggle()` updates `state` (localStorage snapshot) and calls `syncCompletion()`
-3. `syncCompletion()` does `sb.from('tasks').update({completed, completed_at}).eq('id', id)`
-4. Supabase Realtime fires an `UPDATE` event on all subscribed clients
-5. Other devices receive it via `subscribeRealtime()` → re-render automatically
-6. A small green dot flashes in the top-right corner on the receiving device
-
-Pomodoro timer and theme preference are localStorage-only (intentionally device-local).
-
-## How to make common updates
-
-### Change a deadline
-Run in Supabase SQL Editor:
-```sql
-update tasks set due_date = '2026-05-21T12:00:00', end_date = '2026-05-21T12:00:00'
-where id = 'macro';
 ```
-The page reloads data on next open. Already-open pages won't auto-refresh
-static fields (only completion state is realtime). Refresh the tab after data changes.
+URL:  https://mpwuwyxmfiosoeylxopy.supabase.co
+KEY:  sb_publishable_5vLlPrgF5cp_U5NCOJH4zw_xx5p3BYq
+```
 
-### Add a new exam
+These are already wired into `index.html`. Only change them if the project is recreated.
+
+---
+
+## What Jacob typically asks for
+
+### "Update [exam/hw] date/time"
+Run SQL directly in Supabase SQL Editor (no code change needed):
+```sql
+-- Change a deadline
+update tasks
+set due_date = '2026-05-21T14:00:00', end_date = '2026-05-21T14:00:00'
+where id = 'astro';
+
+-- Change an exam window open time
+update tasks set start_date = '2026-05-18T08:00:00' where id = 'ind-org';
+```
+Tell Jacob to refresh the page after — data changes are live immediately but
+already-open tabs don't auto-reload static fields (only checkboxes are realtime).
+
+### "Add a reminder"
+```sql
+insert into tasks (id, type, title, tag, urgency, sort_order)
+values ('reminder-id', 'reminder', 'Reminder text here', 'Tag label', 'day', 5);
+```
+`urgency` controls the color: `now` (green) · `today`/`tonight` (red) · `tomorrow` (orange) · `day` (amber) · `week` (blue)
+
+### "Add a new exam"
 ```sql
 insert into tasks (id, type, course, title, notes, due_date, start_date, end_date,
                    location, color_var, tag, sort_order)
 values (
-  'new-exam-id', 'exam', 'COURSE 101', 'Exam Title',
-  'Notes here. <strong>HTML allowed.</strong>',
-  '2026-05-25T12:00:00', '2026-05-25T09:00:00', '2026-05-25T12:00:00',
-  'Room or URL', 'var(--c-blue)', 'Format description', 6
+  'exam-id', 'exam', 'COURSE 101', 'Exam Title',
+  'Notes here. <strong>HTML ok.</strong>',
+  '2026-05-25T12:00:00',   -- deadline
+  '2026-05-25T09:00:00',   -- window opens
+  '2026-05-25T12:00:00',   -- window closes (usually = deadline)
+  'Location or URL', 'var(--c-blue)', 'Format e.g. 40 MC', 6
 );
--- Add prep items:
+-- Prep checklist items (optional):
 insert into task_items (id, task_id, label, sort_order) values
-('new-exam-id:0', 'new-exam-id', 'First prep item', 0),
-('new-exam-id:1', 'new-exam-id', 'Second prep item', 1);
+('exam-id:0', 'exam-id', 'First prep step', 0),
+('exam-id:1', 'exam-id', 'Second prep step', 1);
 ```
-After inserting, also add a color variable if needed (see CSS `:root` block in
-`index.html` around line 30).
 
-### Add a new HW item
+### "Add a homework item"
 ```sql
 insert into tasks (id, type, course, title, notes, due_date, color_var, sort_order)
-values ('new-hw-id', 'hw', 'COURSE 101', 'Assignment Name',
-        'Description here', '2026-05-25T23:59:00', 'var(--c-blue)', 5);
+values ('hw-id', 'hw', 'COURSE 101', 'Assignment Name',
+        'Notes here', '2026-05-25T23:59:00', 'var(--c-blue)', 5);
 -- Optional subtasks:
 insert into task_items (id, task_id, label, sort_order) values
-('new-hw-id:part1', 'new-hw-id', 'Part 1', 0),
-('new-hw-id:part2', 'new-hw-id', 'Part 2', 1);
+('hw-id:part1', 'hw-id', 'Part 1', 0),
+('hw-id:part2', 'hw-id', 'Part 2', 1);
 ```
 
-### Add a reminder
-```sql
-insert into tasks (id, type, title, tag, urgency, sort_order)
-values ('new-reminder', 'reminder', 'Reminder text here', 'Tag label', 'day', 5);
--- urgency options: now | today | tonight | tomorrow | day | week
-```
+### "Change the order cards appear"
+`sort_order` (int, lower = higher on page) controls card sequence.
 
-### Change display order
-`sort_order` (integer, lower = first) controls card order. Current values:
-
-**Exams:** env-econ=1, ind-org=2, macro=3, money-bank=4, astro=5
-**HW:** honors-paper=1, lab-hubble=2, fed-challenge=3, fnb-catchup=4
-**Reminders:** cbam-deck=1, astro-prep=2, thursday-2x=3, macro-grind=4
+Current order:
+- **Exams:** env-econ=1, ind-org=2, macro=3, money-bank=4, astro=5
+- **HW:** honors-paper=1, lab-hubble=2, fed-challenge=3, fnb-catchup=4
+- **Reminders:** cbam-deck=1, astro-prep=2, thursday-2x=3, macro-grind=4
 
 ```sql
-update tasks set sort_order = 1 where id = 'ind-org';
-update tasks set sort_order = 2 where id = 'env-econ';
+update tasks set sort_order = 1 where id = 'new-priority-exam';
+update tasks set sort_order = 2 where id = 'other-exam';
 ```
 
-### Mark something done/undone manually
+### "Mark X as done/undone"
 ```sql
-update tasks set completed = true,  completed_at = now() where id = 'honors-paper';
-update tasks set completed = false, completed_at = null  where id = 'honors-paper';
+-- Done:
+update tasks set completed = true,  completed_at = now() where id = 'task-id';
+-- Undo:
+update tasks set completed = false, completed_at = null  where id = 'task-id';
+-- Undo a prep item:
+update task_items set completed = false, completed_at = null where id = 'env-econ:0';
 ```
 
-### Reset all completion state (nuclear option)
+### "Reset everything" (nuclear)
 ```sql
 update tasks      set completed = false, completed_at = null;
 update task_items set completed = false, completed_at = null;
 ```
 
-## Editing index.html
-
-The file has three sections in order: **CSS** (lines ~1–880), **HTML** (~882–1015),
-**JavaScript** (~1015–end).
-
-Key JS sections and their approximate line numbers:
-- Supabase credentials: ~1020
-- `loadFromSupabase()`: builds EXAMS/HW/REMINDERS arrays from DB rows
-- `syncCompletion()`: writes checkbox state back to Supabase
-- `subscribeRealtime()`: listens for cross-device changes
-- `renderCards()`: renders exam cards (sorts by `sort_order`)
-- `renderHW()`: renders HW items (sorts by `sort_order`)
-- `renderReminders()`: renders the Critical section
-- `renderProgressFooter()`: updates progress bars
-- `renderNextUp()`: updates the hero countdown
-- `init()`: async entry point — loads Supabase, renders everything, starts timers
-
-**To add a new course color,** edit the `:root` block near the top of the CSS:
-```css
---c-new-course: #your-color;
+### "Change a note / fix text on a card"
+```sql
+update tasks set notes = 'New note text. <strong>HTML ok.</strong>' where id = 'astro';
+update tasks set title = 'New title' where id = 'env-econ';
+update tasks set location = 'New room' where id = 'money-bank';
 ```
-And add a dark-mode variant in `[data-theme="dark"]`.
 
-## Deploying changes
+### "Fix something visual / add a feature"
+Edit `index.html` directly. Structure:
+- **CSS:** lines ~1–880 (`:root` color vars, component styles)
+- **HTML:** lines ~882–1015 (layout, static elements)
+- **JavaScript:** lines ~1017–end
 
-GitHub Pages auto-deploys from the `main` branch. Workflow:
-1. Edit `index.html` (and/or `schema.sql` if schema changed)
-2. Commit and push:
+Key JS functions:
+```
+loadFromSupabase()    — fetches tasks + task_items, builds EXAMS/HW/REMINDERS arrays
+syncCompletion()      — writes checkbox toggle back to Supabase
+subscribeRealtime()   — listens for cross-device changes, re-renders on UPDATE
+renderCards()         — exam cards, sorted by sort_order
+renderHW()            — HW items, sorted by sort_order
+renderReminders()     — Critical section reminders
+renderProgressFooter()— progress bars + motivational line
+renderNextUp()        — hero countdown to next deadline
+init()                — async entry point; calls all of the above
+```
+
+After editing `index.html`, deploy:
 ```bash
-cd /Users/jacobwasserman/finals-dashboard
 git add index.html
-git commit -m "describe what changed"
+git commit -m "brief description of change"
 git push origin main
 ```
-3. GitHub Pages rebuilds in ~60 seconds. The live URL updates automatically.
+GitHub Pages rebuilds in ~60 seconds.
 
-For Supabase data changes (deadlines, new tasks, etc.): run SQL directly in
-the Supabase SQL Editor — no deploy needed, data is live immediately.
+---
 
-## Architecture decisions
+## Course roster (for context)
 
-| Decision | Reason |
-|---|---|
-| Single HTML file, no build | Works on GitHub Pages without CI/CD; editable anywhere |
-| Static exam data in Supabase | Allows future editing without touching code |
-| `sort_order` column controls display order | Deadline-sort caused IO to appear before Env Econ unexpectedly |
-| Anon RLS policies (no login) | Personal use; adding auth would require login on each device |
-| localStorage for pomo/theme | These should be device-local; no cross-device sync needed |
-| Supabase Realtime on UPDATE only | INSERT/DELETE not needed for this use case |
+| ID | Course | Color var |
+|---|---|---|
+| `env-econ` | ECO 39556 — Environmental Economics | `--c-env-econ` (green) |
+| `ind-org` | ECO 245H — Industrial Organization | `--c-ind-org` (violet) |
+| `macro` | ECO 201 — Macroeconomics | `--c-macro` (blue) |
+| `money-bank` | ECO 250H — Money & Banking | `--c-money-bank` (orange) |
+| `astro` | ASTRO 110 — Astronomy | `--c-astro` (blue) |
 
-## Credentials (do not commit new secrets)
+To add a new course color, add to the `:root` block and the `[data-theme="dark"]`
+block near the top of `index.html`:
+```css
+--c-new-course: #16a34a;   /* light mode */
+/* in [data-theme="dark"]: */
+--c-new-course: #4ade80;   /* dark mode */
+```
 
-The publishable key in `index.html` is intentionally public (it's the anon key).
-Never put the Supabase **secret key** or **database password** in this repo.
+---
+
+## Hard rules — do not violate these
+
+- **No build step.** No `npm install`, no bundler, no `package.json`. Everything
+  must run as a plain HTML file loaded directly in a browser.
+- **Single file.** Keep all CSS, HTML, and JS in `index.html`. Do not split into
+  separate files unless Jacob explicitly asks.
+- **No auth.** Do not add Supabase Auth or any login flow without being asked.
+  The anon RLS policy is intentional.
+- **No framework.** No React, Vue, Alpine, etc. Vanilla JS only.
+- **Preserve the design.** Jacob's CSS is carefully tuned. Don't touch color
+  variables, font sizing, or layout unless the request is specifically visual.
+- **Never commit secrets.** The publishable key is fine. Never add the Supabase
+  secret key or database password to any file.
+- **Always pull before pushing.** Run `git pull origin main` before any commit
+  to avoid rejected pushes.
+
+---
+
+## How completion sync works (for debugging)
+
+1. User checks a box → `toggle(bucket, id)` updates local `state` + calls `syncCompletion()`
+2. `syncCompletion()` → `sb.from('tasks').update({completed, completed_at}).eq('id', id)`
+3. Supabase broadcasts an UPDATE event to all subscribed clients
+4. `subscribeRealtime()` receives it → calls `applyTaskUpdate()` or `applyItemUpdate()` → re-renders
+5. A green dot flashes top-right on the receiving device
+
+If realtime isn't working: check Supabase → Database → Replication — `tasks`
+and `task_items` must both be toggled on.
+
+---
+
+## Deploy checklist (if something seems broken)
+
+1. Is the SQL schema applied? (Supabase → Table Editor — do `tasks` and `task_items` exist?)
+2. Is Realtime enabled? (Supabase → Database → Replication — both tables toggled?)
+3. Is GitHub Pages on? (repo → Settings → Pages → Source: main, folder: /)
+4. Did the push go through? (`git log origin/main` should show your latest commit)
+5. Hard-reload the page (`Cmd+Shift+R`) — Pages caches aggressively
