@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finals · Jacob</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg-base: #fafaf9;
+  --panel: #ffffff;
+  --text: #0a0a0a;
+  --text-strong: #000;
+  --text-muted: #525252;
+  --text-faint: #a3a3a3;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --soft: #f5f5f4;
+  --accent: #0a0a0a;
+
+  --c-red:    #dc2626;
+  --c-orange: #ea580c;
+  --c-amber:  #d97706;
+  --c-yellow: #ca8a04;
+  --c-green:  #16a34a;
+  --c-cyan:   #0891b2;
+  --c-blue:   #2563eb;
+  --c-indigo: #4f46e5;
+  --c-violet: #7c3aed;
+  --c-pink:   #db2777;
+
+  --c-env-econ:   #16a34a;
+  --c-ind-org:    #7c3aed;
+  --c-macro:      #0284c7;
+  --c-money-bank: #ea580c;
+  --c-astro:      #2563eb;
+
+  --grad-warm:  linear-gradient(90deg, #dc2626 0%, #ea580c 50%, #f59e0b 100%);
+  --grad-cool:  linear-gradient(90deg, #0891b2 0%, #06b6d4 50%, #67e8f9 100%);
+
+  --bg: radial-gradient(ellipse 80% 50% at 10% 0%, rgba(251,191,36,0.06), transparent 60%),
+        radial-gradient(ellipse 80% 50% at 90% 100%, rgba(8,145,178,0.06), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(124,58,237,0.025), transparent 60%),
+        var(--bg-base);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-base: #09090b;
+  --panel: #161618;
+  --text: #f5f5f4;
+  --text-strong: #fafaf9;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --soft: #1c1c1f;
+  --accent: #fafaf9;
+
+  --c-red:    #f87171;
+  --c-orange: #fb923c;
+  --c-amber:  #fbbf24;
+  --c-yellow: #facc15;
+  --c-green:  #4ade80;
+  --c-cyan:   #22d3ee;
+  --c-blue:   #60a5fa;
+  --c-indigo: #818cf8;
+  --c-violet: #a78bfa;
+  --c-pink:   #f472b6;
+
+  --c-env-econ:   #4ade80;
+  --c-ind-org:    #a78bfa;
+  --c-macro:      #38bdf8;
+  --c-money-bank: #fb923c;
+  --c-astro:      #60a5fa;
+
+  --grad-warm:  linear-gradient(90deg, #ef4444 0%, #f97316 50%, #fbbf24 100%);
+  --grad-cool:  linear-gradient(90deg, #0891b2 0%, #22d3ee 50%, #a5f3fc 100%);
+
+  --bg: radial-gradient(ellipse 80% 50% at 10% 0%, rgba(124,58,237,0.12), transparent 60%),
+        radial-gradient(ellipse 80% 50% at 90% 100%, rgba(8,145,178,0.10), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 30%, rgba(220,38,38,0.04), transparent 60%),
+        var(--bg-base);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg-base); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background 0.4s ease, color 0.3s ease;
+  padding: 32px 24px 80px;
+  min-height: 100vh;
+  background: var(--bg);
+  background-attachment: fixed;
+}
+.page { max-width: 880px; margin: 0 auto; }
+
+/* Loading */
+.loading-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--c-violet), var(--c-cyan));
+  animation: loadslide 1.2s ease-in-out infinite;
+  z-index: 9999;
+  transform-origin: left;
+}
+@keyframes loadslide {
+  0%   { transform: scaleX(0); opacity: 1; }
+  70%  { transform: scaleX(0.85); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+.sync-dot {
+  position: fixed; top: 14px; right: 14px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--c-green);
+  box-shadow: 0 0 8px var(--c-green);
+  z-index: 100;
+  opacity: 0; transition: opacity 0.5s;
+}
+.sync-dot.show { opacity: 1; }
+
+/* Header */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 56px;
+}
+.brand-name {
+  font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase;
+  font-weight: 600; color: var(--text);
+}
+.brand-name .brand-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--c-red), var(--c-violet));
+  margin-right: 8px; vertical-align: 1px;
+  box-shadow: 0 0 12px rgba(220,38,38,0.4);
+}
+.brand-date {
+  font-size: 13px; color: var(--text-faint); margin-top: 2px;
+  letter-spacing: 0.04em;
+}
+.theme-toggle {
+  background: var(--panel); border: 1px solid var(--border);
+  color: var(--text); width: 38px; height: 38px;
+  border-radius: 10px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { border-color: var(--border-strong); transform: scale(1.05) rotate(15deg); }
+
+/* Hero — Next up */
+.hero { margin-bottom: 56px; }
+.hero-label {
+  font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+  font-weight: 600; margin-bottom: 12px;
+  background: linear-gradient(90deg, var(--c-red), var(--c-orange), var(--c-amber));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+.hero-title {
+  font-size: clamp(22px, 3.2vw, 30px); font-weight: 600;
+  letter-spacing: -0.02em; margin-bottom: 4px;
+  color: var(--text-strong);
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.hero-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--soft); color: var(--text-muted);
+}
+.pill.exam {
+  background: var(--c-red); color: white;
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
+}
+.pill.hw {
+  background: var(--c-cyan); color: white;
+  box-shadow: 0 0 0 3px rgba(8,145,178,0.15);
+}
+
+.big-timer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: end; gap: 4px;
+  padding: 36px 28px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  transition: background 0.3s, border-color 0.3s;
+  position: relative; overflow: hidden;
+}
+.big-timer::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at top, rgba(220,38,38,0.04), transparent 50%);
+  pointer-events: none;
+}
+[data-theme="dark"] .big-timer::before {
+  background: radial-gradient(ellipse at top, rgba(239,68,68,0.06), transparent 50%);
+}
+.big-timer .seg { text-align: center; position: relative; z-index: 1; }
+.big-timer .num {
+  font-size: clamp(48px, 11vw, 104px); font-weight: 600;
+  letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
+  line-height: 0.95; color: var(--text-strong); display: block;
+}
+.big-timer .num.seconds {
+  background: linear-gradient(180deg, var(--text-strong) 0%, var(--text-muted) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.big-timer .lbl {
+  display: block; font-size: 10px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--text-faint);
+  font-weight: 600; margin-top: 12px;
+}
+.big-timer .colon {
+  font-size: clamp(32px, 7vw, 64px); font-weight: 200;
+  line-height: 1; text-align: center;
+  padding-bottom: 32px; align-self: end;
+  background: linear-gradient(180deg, var(--c-amber), var(--c-orange));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.5;
+}
+
+/* Progress */
+.progress { margin-bottom: 48px; }
+.prog-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 64px;
+  align-items: center; gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.prog-row:last-of-type { border-bottom: none; }
+.prog-label {
+  font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 600; color: var(--text-muted);
+}
+.prog-track {
+  height: 10px; background: var(--soft);
+  border-radius: 99px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; background: var(--grad-warm);
+  border-radius: 99px;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 12px rgba(220,38,38,0.25);
+}
+.prog-fill.hw { background: var(--grad-cool); box-shadow: 0 0 12px rgba(8,145,178,0.25); }
+.prog-count {
+  font-size: 14px; font-weight: 600;
+  text-align: right; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.prog-status {
+  margin-top: 18px;
+  font-size: 13px; color: var(--text-muted);
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+}
+.prog-status .wins {
+  font-weight: 600; color: var(--c-green);
+  display: inline-flex; align-items: baseline; gap: 6px;
+}
+.prog-status .wins::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c-green); display: inline-block; align-self: center;
+  box-shadow: 0 0 8px var(--c-green);
+}
+.prog-status .motiv { font-weight: 500; transition: color 0.4s ease; }
+.motiv.m-0  { color: var(--c-red); }
+.motiv.m-25 { color: var(--c-orange); }
+.motiv.m-50 { color: var(--c-amber); }
+.motiv.m-70 { color: var(--c-blue); }
+.motiv.m-90 { color: var(--c-violet); }
+.motiv.m-100 { color: var(--c-green); font-weight: 700; }
+
+/* Section header */
+.section-h {
+  font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+  font-weight: 700; color: var(--text-muted);
+  margin: 56px 0 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.section-h::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--section-dot, var(--text-muted));
+  box-shadow: 0 0 8px var(--section-dot, transparent);
+}
+.section-h.exams  { --section-dot: var(--c-red); }
+.section-h.hw     { --section-dot: var(--c-cyan); }
+.section-h.critical { --section-dot: var(--c-amber); }
+.section-h::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* Course dot */
+.course-dot {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--dot, var(--text-faint));
+  margin-right: 8px; vertical-align: 1px;
+  box-shadow: 0 0 6px var(--dot, transparent);
+}
+
+/* Reminders */
+.reminders {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 8px 0;
+  overflow: hidden;
+}
+.rmd {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+  position: relative;
+}
+.rmd::before {
+  content: "";
+  position: absolute; left: 0; top: 14px; bottom: 14px;
+  width: 3px; border-radius: 0 2px 2px 0;
+  background: var(--rmd-color, var(--text-faint));
+  opacity: 0.7;
+}
+.rmd:last-child { border-bottom: none; }
+.rmd:hover { background: var(--soft); }
+.rmd.done { opacity: 0.4; }
+.rmd.done .rmd-text { text-decoration: line-through; }
+.rmd-check {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.rmd.done .rmd-check {
+  background: var(--rmd-color, var(--accent));
+  border-color: var(--rmd-color, var(--accent));
+}
+.rmd.done .rmd-check::after { content: "✓"; color: white; font-size: 11px; font-weight: 700; }
+.rmd-text { font-size: 14px; color: var(--text); flex: 1; }
+.rmd-tag {
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  font-weight: 700; white-space: nowrap;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--rmd-tag-bg, var(--soft));
+  color: var(--rmd-tag-fg, var(--text-faint));
+}
+.rmd.urgency-now      { --rmd-color: var(--c-green);  }
+.rmd.urgency-now      .rmd-tag { --rmd-tag-bg: var(--c-green);  --rmd-tag-fg: white; }
+.rmd.urgency-tonight  { --rmd-color: var(--c-red);    }
+.rmd.urgency-tonight  .rmd-tag { --rmd-tag-bg: var(--c-red);    --rmd-tag-fg: white; animation: pulse 1.8s infinite; }
+.rmd.urgency-today    { --rmd-color: var(--c-red);    }
+.rmd.urgency-today    .rmd-tag { --rmd-tag-bg: var(--c-red);    --rmd-tag-fg: white; }
+.rmd.urgency-tomorrow { --rmd-color: var(--c-orange); }
+.rmd.urgency-tomorrow .rmd-tag { --rmd-tag-bg: var(--c-orange); --rmd-tag-fg: white; }
+.rmd.urgency-week     { --rmd-color: var(--c-blue);   }
+.rmd.urgency-week     .rmd-tag { --rmd-tag-bg: var(--c-blue);   --rmd-tag-fg: white; }
+.rmd.urgency-day      { --rmd-color: var(--c-amber);  }
+.rmd.urgency-day      .rmd-tag { --rmd-tag-bg: var(--c-amber);  --rmd-tag-fg: white; }
+
+/* Exam cards */
+.exam-list, .hw-list { display: flex; flex-direction: column; gap: 14px; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 26px 28px;
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+  cursor: pointer;
+}
+.card::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--card-color, transparent);
+  opacity: 0; transition: opacity 0.25s;
+}
+.card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.card:hover::before { opacity: 0.8; }
+.card.done { opacity: 0.45; }
+.card.done .card-title { text-decoration: line-through; }
+
+.card-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 4px;
+}
+.card-code {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 700; color: var(--text-faint);
+}
+.card-title {
+  font-size: 22px; font-weight: 600; letter-spacing: -0.02em;
+  margin: 4px 0 6px; color: var(--text-strong);
+}
+.card-when { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+.card-where { font-size: 13px; color: var(--text-faint); margin-bottom: 18px; }
+.card-where a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
+.card-status {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 700; padding: 5px 10px;
+  background: var(--soft); color: var(--text-muted);
+  border-radius: 999px; white-space: nowrap;
+}
+.card-status.urgent { background: var(--c-red); color: white; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
+.card-status.live   { background: var(--c-red); color: white; animation: pulse 1.5s infinite; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
+.card-status.soon   { background: var(--c-amber); color: white; }
+.card-status.done   { background: var(--c-green); color: white; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+.card-timer {
+  display: flex; gap: 24px;
+  margin: 12px 0 20px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.card-timer .seg { text-align: left; }
+.card-timer .num {
+  font-size: 36px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em; line-height: 1;
+  color: var(--text-strong);
+}
+.card-timer .lbl {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+  margin-top: 6px;
+}
+
+.card-notes {
+  font-size: 14px; color: var(--text-muted);
+  margin-bottom: 18px; line-height: 1.55;
+}
+.card-notes strong { color: var(--text); font-weight: 600; }
+.card-notes a { color: var(--c-blue); text-decoration: underline; text-underline-offset: 2px; }
+
+.prep-list { margin-bottom: 18px; }
+.prep-head {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+  margin-bottom: 10px;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.prep-pct {
+  color: var(--card-color, var(--text-muted));
+  font-variant-numeric: tabular-nums; font-weight: 700;
+}
+.prep-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; font-size: 14px;
+  color: var(--text-muted); cursor: pointer;
+  transition: color 0.15s;
+}
+.prep-item:hover { color: var(--text); }
+.prep-item.done { color: var(--text-faint); }
+.prep-item.done .prep-label { text-decoration: line-through; }
+.prep-check {
+  width: 15px; height: 15px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.prep-item.done .prep-check {
+  background: var(--card-color, var(--accent));
+  border-color: var(--card-color, var(--accent));
+}
+.prep-item.done .prep-check::after { content: "✓"; color: white; font-size: 9px; font-weight: 700; }
+
+.card-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.btn {
+  padding: 9px 18px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: transparent; color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.btn:hover {
+  background: var(--card-color, var(--accent));
+  color: white;
+  border-color: var(--card-color, var(--accent));
+}
+.btn.btn-focus {
+  background: var(--card-color, var(--accent));
+  color: white; border-color: var(--card-color, var(--accent));
+}
+.btn.btn-focus:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.card.done .btn { background: transparent; color: var(--text-faint); }
+.card.done .btn:hover { background: var(--soft); color: var(--text); border-color: var(--border-strong); }
+
+.card-hint {
+  position: absolute; top: 14px; right: 18px;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  font-weight: 600; color: var(--text-faint);
+  opacity: 0; transition: opacity 0.2s;
+  pointer-events: none;
+}
+.card:hover .card-hint { opacity: 1; }
+
+/* HW items */
+.hw-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex; align-items: center; gap: 16px;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+}
+.hw-item::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--hw-color, transparent);
+  opacity: 0; transition: opacity 0.25s;
+}
+.hw-item:hover { border-color: var(--border-strong); transform: translateX(2px); }
+.hw-item:hover::before { opacity: 0.8; }
+.hw-item.done { opacity: 0.4; }
+.hw-item.done .hw-title { text-decoration: line-through; }
+.hw-check {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 7px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.hw-item.done .hw-check {
+  background: var(--hw-color, var(--c-cyan));
+  border-color: var(--hw-color, var(--c-cyan));
+}
+.hw-item.done .hw-check::after { content: "✓"; color: white; font-size: 12px; font-weight: 700; }
+.hw-body { flex: 1; min-width: 0; }
+.hw-meta { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.hw-code {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 700;
+}
+.hw-title { font-size: 16px; font-weight: 600; color: var(--text-strong); }
+.hw-note { font-size: 13px; color: var(--text-faint); margin-top: 2px; }
+.hw-subtasks { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.hw-subtask {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted);
+  padding: 4px 10px; background: var(--soft);
+  border-radius: 999px; cursor: pointer;
+  transition: all 0.15s;
+}
+.hw-subtask:hover { background: var(--border); }
+.hw-subtask.done { opacity: 0.5; text-decoration: line-through; }
+.hw-subcheck {
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--text-faint);
+  border-radius: 3px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.hw-subtask.done .hw-subcheck {
+  background: var(--hw-color, var(--c-cyan));
+  border-color: var(--hw-color, var(--c-cyan));
+}
+.hw-subtask.done .hw-subcheck::after { content: "✓"; color: white; font-size: 8px; font-weight: 700; }
+.hw-due {
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  font-weight: 700; padding: 5px 10px;
+  border-radius: 999px; white-space: nowrap; align-self: center;
+}
+.hw-due.later     { background: var(--soft); color: var(--text-muted); }
+.hw-due.soon      { background: rgba(217,119,6,0.12); color: var(--c-amber); border: 1px solid var(--c-amber); }
+.hw-due.tomorrow  { background: var(--c-orange); color: white; }
+.hw-due.today     { background: var(--c-red); color: white; animation: pulse 1.5s infinite; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
+.hw-due.overdue   { background: var(--c-pink); color: white; }
+.hw-due.submitted { background: var(--c-green); color: white; }
+
+/* Footer */
+footer {
+  margin-top: 64px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+footer .quote {
+  font-style: italic; margin-top: 6px;
+  background: linear-gradient(90deg, var(--c-violet), var(--c-cyan));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; opacity: 0.85;
+}
+
+/* Confetti */
+.confetti {
+  position: fixed; top: -10px; pointer-events: none;
+  width: 6px; height: 6px;
+  animation: fall 2s ease-in forwards;
+  z-index: 9999;
+}
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
+
+/* ---------- POMODORO WIDGET ---------- */
+.pomo {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 90;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.10), 0 2px 10px rgba(0,0,0,0.06);
+  min-width: 220px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  backdrop-filter: blur(10px);
+}
+[data-theme="dark"] .pomo {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+}
+.pomo.minimal {
+  min-width: auto; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  border-radius: 999px;
+}
+.pomo-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.pomo.minimal .pomo-head { margin: 0; }
+.pomo-mode {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 700; color: var(--text-faint);
+  display: flex; align-items: center; gap: 6px;
+}
+.pomo-mode::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pomo-color, var(--text-faint));
+  box-shadow: 0 0 8px var(--pomo-color, transparent);
+}
+.pomo.mode-focus       { --pomo-color: var(--c-red); }
+.pomo.mode-short-break { --pomo-color: var(--c-green); }
+.pomo.mode-long-break  { --pomo-color: var(--c-blue); }
+.pomo.mode-focus       .pomo-mode { color: var(--c-red); }
+.pomo.mode-short-break .pomo-mode { color: var(--c-green); }
+.pomo.mode-long-break  .pomo-mode { color: var(--c-blue); }
+.pomo-collapse {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-faint); font-size: 16px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+}
+.pomo-display {
+  font-size: 38px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+  text-align: center;
+  line-height: 1; margin-bottom: 4px;
+}
+.pomo.minimal .pomo-display {
+  font-size: 22px; margin: 0;
+}
+.pomo-progress {
+  height: 4px; background: var(--soft);
+  border-radius: 99px; overflow: hidden;
+  margin: 10px 0 12px;
+}
+.pomo.minimal .pomo-progress { display: none; }
+.pomo-progress-fill {
+  height: 100%; background: var(--pomo-color, var(--c-red));
+  border-radius: 99px;
+  transition: width 0.5s linear;
+  box-shadow: 0 0 8px var(--pomo-color, transparent);
+}
+.pomo-controls { display: flex; gap: 6px; }
+.pomo.minimal .pomo-controls { gap: 4px; }
+.pomo-btn {
+  flex: 1; padding: 8px 10px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: transparent; color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.pomo-btn:hover {
+  background: var(--pomo-color, var(--c-red));
+  color: white;
+  border-color: var(--pomo-color, var(--c-red));
+}
+.pomo-btn.primary {
+  background: var(--pomo-color, var(--c-red));
+  color: white;
+  border-color: var(--pomo-color, var(--c-red));
+}
+.pomo-btn.primary:hover { filter: brightness(1.15); }
+.pomo.minimal .pomo-btn {
+  padding: 6px 12px; font-size: 10px;
+  flex: none;
+}
+.pomo-stat {
+  margin-top: 10px;
+  font-size: 11px; letter-spacing: 0.05em;
+  color: var(--text-faint); text-align: center;
+}
+.pomo.minimal .pomo-stat { display: none; }
+
+@media (max-width: 600px) {
+  .pomo { bottom: 12px; right: 12px; left: 12px; min-width: auto; }
+}
+
+/* ---------- FOCUS OVERLAY ---------- */
+.focus-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 200;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.25s ease;
+}
+[data-theme="dark"] .focus-overlay { background: rgba(0,0,0,0.7); }
+.focus-overlay.open { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.focus-card {
+  background: var(--panel);
+  background: radial-gradient(ellipse 100% 50% at 50% 0%, color-mix(in srgb, var(--focus-color) 8%, var(--panel)), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 44px;
+  max-width: 820px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .focus-card {
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+}
+.focus-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--focus-color), transparent);
+  border-radius: 24px 24px 0 0;
+}
+.focus-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  color: var(--text); cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.focus-close:hover {
+  background: var(--c-red); color: white; border-color: var(--c-red);
+  transform: rotate(90deg);
+}
+.focus-esc-hint {
+  position: absolute; top: 22px; right: 64px;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+
+.focus-head { margin-bottom: 28px; }
+.focus-code {
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  font-weight: 700; color: var(--focus-color, var(--text-faint));
+}
+.focus-title {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700; letter-spacing: -0.03em;
+  color: var(--text-strong);
+  margin: 10px 0 12px; line-height: 1.05;
+}
+.focus-when { font-size: 16px; color: var(--text-muted); }
+.focus-where {
+  font-size: 14px; color: var(--text-faint);
+  margin-top: 4px;
+}
+.focus-where a { color: var(--focus-color); }
+
+.focus-timer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: end; gap: 4px;
+  padding: 28px 24px;
+  margin: 28px 0;
+  background: var(--soft);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+}
+.focus-timer .seg { text-align: center; }
+.focus-timer .num {
+  font-size: clamp(40px, 8vw, 80px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  color: var(--text-strong);
+}
+.focus-timer .lbl {
+  font-size: 10px; letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+  margin-top: 10px; display: block;
+}
+.focus-timer .colon {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 200; color: var(--focus-color);
+  padding-bottom: 26px; align-self: end;
+  opacity: 0.6;
+}
+
+.focus-notes {
+  font-size: 15px; color: var(--text-muted);
+  line-height: 1.6; margin-bottom: 28px;
+  padding: 18px 22px;
+  background: var(--soft);
+  border-radius: 12px;
+  border-left: 4px solid var(--focus-color);
+}
+.focus-notes strong { color: var(--text); font-weight: 600; }
+.focus-notes a { color: var(--focus-color); }
+
+.focus-section-h {
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 700;
+  margin: 8px 0 14px;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.focus-section-h .pct {
+  color: var(--focus-color); font-weight: 700;
+}
+
+.focus-prep { margin-bottom: 28px; }
+.focus-prep .prep-item { font-size: 16px; padding: 8px 0; }
+.focus-prep .prep-check { width: 18px; height: 18px; }
+
+.focus-pomo {
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.focus-pomo-display {
+  font-size: 56px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: var(--text-strong);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.focus-pomo-info { flex: 1; min-width: 140px; }
+.focus-pomo-mode {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.focus-pomo-mode::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pomo-color, var(--c-red));
+  box-shadow: 0 0 8px var(--pomo-color, transparent);
+}
+.focus-pomo-stat { font-size: 13px; color: var(--text-muted); }
+.focus-pomo-controls { display: flex; gap: 8px; }
+
+.focus-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .focus-card { padding: 28px 22px 24px; }
+  .focus-pomo { gap: 16px; }
+  .focus-pomo-display { font-size: 40px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading bar (hidden once data loads) -->
+<div class="loading-bar" id="loading-bar"></div>
+<!-- Sync indicator (flashes green when realtime update arrives) -->
+<div class="sync-dot" id="sync-dot"></div>
+
+<div class="page">
+
+  <header class="topbar">
+    <div>
+      <div class="brand-name"><span class="brand-dot"></span>Jacob · Finals</div>
+      <div class="brand-date" id="today-date">—</div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle dark mode"><span id="theme-icon">☾</span></button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-label">Next up</div>
+    <h1 class="hero-title" id="hero-title">—</h1>
+    <div class="hero-meta" id="hero-meta">—</div>
+    <div class="big-timer">
+      <div class="seg"><span class="num" data-big="d">--</span><span class="lbl">days</span></div>
+      <div class="colon">:</div>
+      <div class="seg"><span class="num" data-big="h">--</span><span class="lbl">hrs</span></div>
+      <div class="colon">:</div>
+      <div class="seg"><span class="num" data-big="m">--</span><span class="lbl">min</span></div>
+      <div class="colon">:</div>
+      <div class="seg"><span class="num seconds" data-big="s">--</span><span class="lbl">sec</span></div>
+    </div>
+  </section>
+
+  <section class="progress">
+    <div class="prog-row">
+      <div class="prog-label">Exams</div>
+      <div class="prog-track"><div class="prog-fill" id="prog-exams" style="width:0%"></div></div>
+      <div class="prog-count" id="prog-exams-count">0/5</div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-label">Homework</div>
+      <div class="prog-track"><div class="prog-fill hw" id="prog-hw" style="width:0%"></div></div>
+      <div class="prog-count" id="prog-hw-count">0/4</div>
+    </div>
+    <div class="prog-status">
+      <span class="wins" id="wins-today">0 wins today</span>
+      <span style="opacity: 0.4">·</span>
+      <span class="motiv m-0" id="motiv-line">Pick one. Start there.</span>
+    </div>
+  </section>
+
+  <div class="section-h critical">Critical</div>
+  <section class="reminders" id="reminders"></section>
+
+  <div class="section-h exams">Exams</div>
+  <section class="exam-list" id="exam-list"></section>
+
+  <div class="section-h hw">Homework</div>
+  <section class="hw-list" id="hw-list"></section>
+
+  <footer>
+    <div>Live sync via Supabase · Tap a card to focus · Toggle theme top right</div>
+    <div class="quote" id="quote">—</div>
+  </footer>
+</div>
+
+<!-- Pomodoro widget (persistent) -->
+<div class="pomo mode-focus" id="pomo">
+  <div class="pomo-head">
+    <div class="pomo-mode" id="pomo-mode-mini">Focus</div>
+    <button class="pomo-collapse" id="pomo-collapse" title="Collapse">⊟</button>
+  </div>
+  <div class="pomo-display" id="pomo-display">25:00</div>
+  <div class="pomo-progress"><div class="pomo-progress-fill" id="pomo-progress" style="width:0%"></div></div>
+  <div class="pomo-controls">
+    <button class="pomo-btn primary" id="pomo-start">Start</button>
+    <button class="pomo-btn" id="pomo-reset">Reset</button>
+    <button class="pomo-btn" id="pomo-skip">Skip</button>
+  </div>
+  <div class="pomo-stat" id="pomo-stat">0 done today</div>
+</div>
+
+<!-- Focus overlay -->
+<div class="focus-overlay" id="focus-overlay">
+  <div class="focus-card" id="focus-card">
+    <div class="focus-esc-hint">Esc to close</div>
+    <button class="focus-close" id="focus-close" aria-label="Close">×</button>
+    <div id="focus-content"></div>
+  </div>
+</div>
+
+<!-- Supabase JS client (CDN, no build step) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ================================================================
+// Supabase connection
+// ================================================================
+const SUPABASE_URL  = 'https://mpwuwyxmfiosoeylxopy.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_5vLlPrgF5cp_U5NCOJH4zw_xx5p3BYq';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ================================================================
+// Data arrays — populated from Supabase on load
+// ================================================================
+let EXAMS     = [];
+let HW        = [];
+let REMINDERS = [];
+
+// ================================================================
+// State — localStorage for pomo/theme; Supabase for completions
+// ================================================================
+const LS_KEY = "jacob-finals-2026-v3";
+let state = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+state.examsDone = state.examsDone || {};
+state.prepDone  = state.prepDone  || {};
+state.reminders = state.reminders || {};
+state.hwDone    = state.hwDone    || {};
+state.hwSubDone = state.hwSubDone || {};
+state.theme     = state.theme     || "light";
+state.pomo      = state.pomo      || {
+  mode: "focus", endsAt: null, remaining: 25 * 60,
+  completedToday: 0, completedDate: "", cycleCount: 0, collapsed: false
+};
+
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+// ================================================================
+// Supabase: load all tasks + items
+// ================================================================
+async function loadFromSupabase() {
+  const [{ data: tasks, error: te }, { data: items, error: ie }] = await Promise.all([
+    sb.from('tasks').select('*').order('sort_order'),
+    sb.from('task_items').select('*').order('sort_order')
+  ]);
+
+  if (te || ie) {
+    console.error('Supabase load error', te || ie);
+    return false;
+  }
+
+  // Reset arrays and completion state (will rebuild from DB)
+  EXAMS = []; HW = []; REMINDERS = [];
+  state.examsDone = {}; state.prepDone = {};
+  state.hwDone    = {}; state.hwSubDone = {}; state.reminders = {};
+
+  // Group items by task_id
+  const byTask = {};
+  for (const item of items || []) {
+    (byTask[item.task_id] = byTask[item.task_id] || []).push(item);
+  }
+
+  for (const t of tasks || []) {
+    const taskItems = byTask[t.id] || [];
+
+    if (t.type === 'exam') {
+      EXAMS.push({
+        id:        t.id,
+        code:      t.course || '',
+        title:     t.title,
+        questions: t.tag    || '',
+        location:  t.location || '',
+        start:     t.start_date,
+        end:       t.end_date || t.due_date,
+        deadline:  t.due_date,
+        color:     t.color_var || 'var(--text)',
+        notes:     t.notes || '',
+        prep:      taskItems.map(i => i.label)
+      });
+      if (t.completed) state.examsDone[t.id] = t.completed_at || new Date().toISOString();
+      for (const item of taskItems) {
+        if (item.completed) state.prepDone[item.id] = item.completed_at || new Date().toISOString();
+      }
+
+    } else if (t.type === 'hw') {
+      HW.push({
+        id:       t.id,
+        code:     t.course || '',
+        title:    t.title,
+        note:     t.notes  || '',
+        deadline: t.due_date,
+        color:    t.color_var || 'var(--text)',
+        subtasks: taskItems.length
+          ? taskItems.map(i => ({ id: i.id.replace(t.id + ':', ''), label: i.label }))
+          : undefined
+      });
+      if (t.completed) state.hwDone[t.id] = t.completed_at || new Date().toISOString();
+      for (const item of taskItems) {
+        if (item.completed) state.hwSubDone[item.id] = item.completed_at || new Date().toISOString();
+      }
+
+    } else if (t.type === 'reminder') {
+      REMINDERS.push({ id: t.id, text: t.title, tag: t.tag || '', urgency: t.urgency || 'day' });
+      if (t.completed) state.reminders[t.id] = t.completed_at || new Date().toISOString();
+    }
+  }
+
+  return true;
+}
+
+// ================================================================
+// Supabase: write completion back on toggle
+// ================================================================
+async function syncCompletion(bucket, id) {
+  const completed    = !!state[bucket][id];
+  const completed_at = completed ? state[bucket][id] : null;
+  const payload      = { completed, completed_at };
+
+  if (bucket === 'examsDone' || bucket === 'hwDone' || bucket === 'reminders') {
+    await sb.from('tasks').update(payload).eq('id', id);
+  } else {
+    await sb.from('task_items').update(payload).eq('id', id);
+  }
+}
+
+async function toggle(bucket, id) {
+  if (state[bucket][id]) delete state[bucket][id];
+  else state[bucket][id] = new Date().toISOString();
+  save();
+  await syncCompletion(bucket, id);
+}
+
+// ================================================================
+// Supabase: realtime subscription
+// ================================================================
+function flashSync() {
+  const dot = document.getElementById('sync-dot');
+  dot.classList.add('show');
+  setTimeout(() => dot.classList.remove('show'), 1200);
+}
+
+function applyTaskUpdate(t) {
+  const ts = t.completed_at || new Date().toISOString();
+  if (t.type === 'exam') {
+    if (t.completed) state.examsDone[t.id] = ts; else delete state.examsDone[t.id];
+  } else if (t.type === 'hw') {
+    if (t.completed) state.hwDone[t.id] = ts;    else delete state.hwDone[t.id];
+  } else if (t.type === 'reminder') {
+    if (t.completed) state.reminders[t.id] = ts; else delete state.reminders[t.id];
+  }
+  save();
+}
+
+function applyItemUpdate(item) {
+  const ts = item.completed_at || new Date().toISOString();
+  const isPrep = EXAMS.some(e => e.id === item.task_id);
+  if (isPrep) {
+    if (item.completed) state.prepDone[item.id] = ts;    else delete state.prepDone[item.id];
+  } else {
+    if (item.completed) state.hwSubDone[item.id] = ts;   else delete state.hwSubDone[item.id];
+  }
+  save();
+}
+
+function subscribeRealtime() {
+  sb.channel('db-changes')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tasks' }, ({ new: t }) => {
+      applyTaskUpdate(t);
+      flashSync();
+      renderReminders(); renderCards(); renderHW(); renderProgressFooter(); renderNextUp();
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'task_items' }, ({ new: item }) => {
+      applyItemUpdate(item);
+      flashSync();
+      renderCards(); renderHW(); renderProgressFooter();
+      if (focusedExamId) renderFocus();
+    })
+    .subscribe();
+}
+
+// ================================================================
+// Theme
+// ================================================================
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  document.getElementById("theme-icon").textContent = t === "dark" ? "☀" : "☾";
+  state.theme = t; save();
+}
+document.getElementById("theme-toggle").onclick = () => setTheme(state.theme === "dark" ? "light" : "dark");
+
+// ================================================================
+// Helpers
+// ================================================================
+function fmtDate(iso)  { return new Date(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); }
+function fmtTime(iso)  { return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); }
+function fmtRange(start, end) {
+  const s = new Date(start), e = new Date(end);
+  if (s.toDateString() === e.toDateString()) return `${fmtDate(start)} · ${fmtTime(start)}–${fmtTime(end)}`;
+  return `${fmtDate(start)} ${fmtTime(start)} → ${fmtDate(end)} ${fmtTime(end)}`;
+}
+function diff(target) {
+  const ms = new Date(target).getTime() - Date.now();
+  const abs = Math.abs(ms);
+  return { ms, d: Math.floor(abs / 86400000), h: Math.floor((abs % 86400000) / 3600000), m: Math.floor((abs % 3600000) / 60000), s: Math.floor((abs % 60000) / 1000), past: ms < 0 };
+}
+function pad(n) { return String(n).padStart(2, "0"); }
+function statusFor(exam, done) {
+  if (done) return { cls: "done", text: "Done" };
+  const now = Date.now(), dl = new Date(exam.deadline).getTime(), start = new Date(exam.start).getTime();
+  if (now > dl) return { cls: "done", text: "Past" };
+  if (now >= start && now <= dl) return { cls: "live", text: "Open now" };
+  const hrs = (start - now) / 3600000;
+  if (hrs <= 12) return { cls: "urgent", text: "Soon" };
+  if (hrs <= 48) return { cls: "soon", text: "This week" };
+  return { cls: "", text: "Upcoming" };
+}
+function dueFor(deadline, done) {
+  if (done) return { cls: "submitted", text: "Submitted" };
+  const now = Date.now(), dl = new Date(deadline).getTime();
+  if (now > dl) return { cls: "overdue", text: "Overdue" };
+  const hrs = (dl - now) / 3600000;
+  if (hrs < 12) return { cls: "today", text: "Due today" };
+  if (hrs < 36) return { cls: "tomorrow", text: "Due tomorrow" };
+  if (hrs < 96) return { cls: "soon", text: "Due " + new Date(deadline).toLocaleDateString("en-US", { weekday: "long" }) };
+  return { cls: "later", text: "Due " + fmtDate(deadline) };
+}
+function todayKey() { return new Date().toDateString(); }
+function countWinsToday() {
+  let n = 0;
+  for (const bucket of [state.examsDone, state.prepDone, state.reminders, state.hwDone, state.hwSubDone]) {
+    for (const id in bucket) {
+      const v = bucket[id];
+      if (typeof v === "string" && new Date(v).toDateString() === todayKey()) n++;
+    }
+  }
+  return n;
+}
+
+// ================================================================
+// Renderers (unchanged from original — they read the same state/arrays)
+// ================================================================
+function renderReminders() {
+  const host = document.getElementById("reminders");
+  host.innerHTML = "";
+  REMINDERS.forEach(r => {
+    const done = !!state.reminders[r.id];
+    const row = document.createElement("div");
+    row.className = `rmd urgency-${r.urgency || "day"}` + (done ? " done" : "");
+    row.innerHTML = `<div class="rmd-check"></div><div class="rmd-text">${r.text}</div><div class="rmd-tag">${r.tag}</div>`;
+    row.onclick = () => {
+      const wasDone = !!state.reminders[r.id];
+      toggle("reminders", r.id);
+      renderReminders(); renderProgressFooter();
+      if (!wasDone) burstConfetti(15);
+    };
+    host.appendChild(row);
+  });
+}
+
+function prepPct(exam) {
+  const total = exam.prep.length;
+  const done  = exam.prep.filter((_, i) => state.prepDone[`${exam.id}:${i}`]).length;
+  return total ? Math.round((done / total) * 100) : 0;
+}
+
+function renderCards() {
+  const host = document.getElementById("exam-list");
+  host.innerHTML = "";
+  const sorted = [...EXAMS].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  sorted.forEach(exam => {
+    const done = !!state.examsDone[exam.id];
+    const stat = statusFor(exam, done);
+    const d    = diff(exam.deadline);
+    const card = document.createElement("div");
+    card.className    = "card" + (done ? " done" : "");
+    card.dataset.examId = exam.id;
+    card.style.setProperty("--card-color", exam.color);
+    card.innerHTML = `
+      <div class="card-hint">Tap to focus →</div>
+      <div class="card-head">
+        <div>
+          <div class="card-code"><span class="course-dot" style="--dot: ${exam.color}"></span>${exam.code} · ${exam.questions}</div>
+          <div class="card-title">${exam.title}</div>
+          <div class="card-when">${fmtRange(exam.start, exam.end)}</div>
+          <div class="card-where">${exam.location}</div>
+        </div>
+        <div class="card-status ${stat.cls}">${stat.text}</div>
+      </div>
+      <div class="card-timer" data-timer="${exam.deadline}">
+        <div class="seg"><div class="num">${d.past ? 0 : d.d}</div><div class="lbl">Days</div></div>
+        <div class="seg"><div class="num">${d.past ? "00" : pad(d.h)}</div><div class="lbl">Hrs</div></div>
+        <div class="seg"><div class="num">${d.past ? "00" : pad(d.m)}</div><div class="lbl">Min</div></div>
+        <div class="seg"><div class="num">${d.past ? "00" : pad(d.s)}</div><div class="lbl">Sec</div></div>
+      </div>
+      <div class="card-notes">${exam.notes}</div>
+      <div class="prep-list">
+        <div class="prep-head"><span>Prep</span><span class="prep-pct">${prepPct(exam)}%</span></div>
+        ${exam.prep.map((p, i) => {
+          const k = `${exam.id}:${i}`;
+          const pdone = !!state.prepDone[k];
+          return `<div class="prep-item${pdone ? " done" : ""}" data-prep="${k}"><div class="prep-check"></div><div class="prep-label">${p}</div></div>`;
+        }).join("")}
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-focus" data-focus="${exam.id}">Focus ↗</button>
+        <button class="btn" data-toggle="${exam.id}">${done ? "↺ Reopen" : "Mark done ✓"}</button>
+      </div>
+    `;
+    host.appendChild(card);
+  });
+
+  host.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", e => {
+      if (e.target.closest("button, [data-prep], a")) return;
+      openFocus(card.dataset.examId);
+    });
+  });
+  host.querySelectorAll("[data-toggle]").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.toggle;
+      const wasDone = !!state.examsDone[id];
+      toggle("examsDone", id);
+      renderCards(); renderProgressFooter(); renderNextUp();
+      if (!wasDone) burstConfetti(50);
+    };
+  });
+  host.querySelectorAll("[data-focus]").forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); openFocus(e.currentTarget.dataset.focus); };
+  });
+  host.querySelectorAll("[data-prep]").forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const k = el.dataset.prep;
+      const wasDone = !!state.prepDone[k];
+      toggle("prepDone", k);
+      renderCards(); renderProgressFooter();
+      if (focusedExamId) renderFocus();
+      if (!wasDone) burstConfetti(8);
+    };
+  });
+}
+
+function renderHW() {
+  const host = document.getElementById("hw-list");
+  host.innerHTML = "";
+  const sorted = [...HW].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  sorted.forEach(hw => {
+    const done   = !!state.hwDone[hw.id];
+    const due    = dueFor(hw.deadline, done);
+    const dueStr = new Date(hw.deadline).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    const subs   = hw.subtasks ? `<div class="hw-subtasks">${hw.subtasks.map(st => {
+      const k     = `${hw.id}:${st.id}`;
+      const sdone = !!state.hwSubDone[k];
+      return `<div class="hw-subtask${sdone ? " done" : ""}" data-sub="${k}"><div class="hw-subcheck"></div>${st.label}</div>`;
+    }).join("")}</div>` : "";
+    const item = document.createElement("div");
+    item.className = "hw-item" + (done ? " done" : "");
+    item.dataset.hw = hw.id;
+    item.style.setProperty("--hw-color", hw.color);
+    item.innerHTML = `
+      <div class="hw-check"></div>
+      <div class="hw-body">
+        <div class="hw-meta">
+          <span class="hw-code"><span class="course-dot" style="--dot: ${hw.color}"></span>${hw.code}</span>
+          <span class="hw-title">${hw.title}</span>
+        </div>
+        <div class="hw-note">${hw.note} · ${dueStr}</div>
+        ${subs}
+      </div>
+      <div class="hw-due ${due.cls}">${due.text}</div>
+    `;
+    host.appendChild(item);
+  });
+
+  host.querySelectorAll(".hw-item").forEach(el => {
+    el.onclick = (e) => {
+      if (e.target.closest(".hw-subtask")) return;
+      const id = el.dataset.hw;
+      const wasDone = !!state.hwDone[id];
+      toggle("hwDone", id);
+      renderHW(); renderProgressFooter(); renderNextUp();
+      if (!wasDone) burstConfetti(40);
+    };
+  });
+  host.querySelectorAll(".hw-subtask").forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const k = el.dataset.sub;
+      const wasDone = !!state.hwSubDone[k];
+      toggle("hwSubDone", k);
+      renderHW();
+      if (!wasDone) burstConfetti(10);
+    };
+  });
+}
+
+function motivFor(pct) {
+  if (pct >= 100) return { text: "All done. Go celebrate.",         cls: "m-100" };
+  if (pct >= 90)  return { text: "One more. Finish strong.",        cls: "m-90"  };
+  if (pct >= 70)  return { text: "Almost there. Push.",             cls: "m-70"  };
+  if (pct >= 50)  return { text: "Halfway. Don't stop now.",        cls: "m-50"  };
+  if (pct >= 25)  return { text: "You're rolling. Stack the wins.", cls: "m-25"  };
+  if (pct > 0)    return { text: "Off the bench. Keep going.",      cls: "m-25"  };
+  return                  { text: "Pick one thing. Start there.",   cls: "m-0"   };
+}
+
+function renderProgressFooter() {
+  const eDone = EXAMS.filter(e => state.examsDone[e.id]).length;
+  const hDone = HW.filter(h => state.hwDone[h.id]).length;
+  const ePct  = EXAMS.length ? Math.round((eDone / EXAMS.length) * 100) : 0;
+  const hPct  = HW.length    ? Math.round((hDone / HW.length)    * 100) : 0;
+  document.getElementById("prog-exams").style.width    = ePct + "%";
+  document.getElementById("prog-hw").style.width       = hPct + "%";
+  document.getElementById("prog-exams-count").textContent = `${eDone}/${EXAMS.length}`;
+  document.getElementById("prog-hw-count").textContent    = `${hDone}/${HW.length}`;
+
+  const total = EXAMS.length + HW.length;
+  const totalPct = total ? Math.round(((eDone + hDone) / total) * 100) : 0;
+  const m = motivFor(totalPct);
+  const motivEl = document.getElementById("motiv-line");
+  motivEl.textContent = m.text;
+  motivEl.className   = "motiv " + m.cls;
+
+  const wins = countWinsToday();
+  document.getElementById("wins-today").textContent = wins === 1 ? "1 win today" : `${wins} wins today`;
+}
+
+function nextDeadline() {
+  const now = Date.now();
+  const items = [
+    ...EXAMS.filter(e => !state.examsDone[e.id] && new Date(e.deadline).getTime() > now)
+            .map(e => ({ ...e, type: "Exam", titleStr: `${e.code} · ${e.title}` })),
+    ...HW.filter(h => !state.hwDone[h.id] && new Date(h.deadline).getTime() > now)
+         .map(h => ({ ...h, type: "HW",   titleStr: `${h.code} · ${h.title}` }))
+  ];
+  items.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  return items[0];
+}
+
+function renderNextUp() {
+  const e = nextDeadline();
+  if (!e) {
+    document.getElementById("hero-title").textContent = "All done. Go celebrate.";
+    document.getElementById("hero-meta").textContent  = "Every exam and assignment is checked off.";
+    ["d","h","m","s"].forEach(k => document.querySelector(`[data-big="${k}"]`).textContent = "0");
+    return;
+  }
+  const pillClass = e.type === "Exam" ? "pill exam" : "pill hw";
+  document.getElementById("hero-title").innerHTML =
+    `<span class="course-dot" style="--dot: ${e.color}"></span>${e.titleStr} <span class="${pillClass}">${e.type}</span>`;
+  const meta = e.type === "Exam"
+    ? `${fmtRange(e.start, e.end)} · ${e.location}`
+    : `Due ${new Date(e.deadline).toLocaleString("en-US", { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`;
+  document.getElementById("hero-meta").textContent = meta;
+  tickBig(e.deadline);
+}
+
+function tickBig(target) {
+  const d = diff(target);
+  document.querySelector('[data-big="d"]').textContent = d.past ? "0"  : d.d;
+  document.querySelector('[data-big="h"]').textContent = d.past ? "00" : pad(d.h);
+  document.querySelector('[data-big="m"]').textContent = d.past ? "00" : pad(d.m);
+  document.querySelector('[data-big="s"]').textContent = d.past ? "00" : pad(d.s);
+}
+
+function tickAllTimers() {
+  const next = nextDeadline();
+  if (next) tickBig(next.deadline);
+  document.querySelectorAll("[data-timer]").forEach(el => {
+    const d = diff(el.dataset.timer);
+    const nums = el.querySelectorAll(".num");
+    if (d.past) { nums[0].textContent = "0"; nums[1].textContent = "00"; nums[2].textContent = "00"; nums[3].textContent = "00"; return; }
+    nums[0].textContent = d.d; nums[1].textContent = pad(d.h); nums[2].textContent = pad(d.m); nums[3].textContent = pad(d.s);
+  });
+  if (focusedExamId) {
+    const exam = EXAMS.find(e => e.id === focusedExamId);
+    if (exam) updateFocusTimer(exam.deadline);
+  }
+}
+
+function updateDate() {
+  document.getElementById("today-date").textContent = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+const QUOTES = [
+  '"The way to get started is to quit talking and begin doing." — Walt Disney',
+  '"You don\'t have to be great to start, but you have to start to be great." — Zig Ziglar',
+  '"Discipline equals freedom." — Jocko Willink',
+  '"It always seems impossible until it\'s done." — Nelson Mandela',
+  '"Done is better than perfect. Submitted is better than done."',
+  '"You don\'t have to see the whole staircase, just take the first step." — MLK Jr.',
+  '"Small daily improvements are the key to staggering long-term results."',
+  '"Focus on being productive instead of busy." — Tim Ferriss',
+  '"Show up. That is most of it." — anon',
+  '"The cave you fear to enter holds the treasure you seek." — Joseph Campbell'
+];
+function rotateQuote() {
+  document.getElementById("quote").textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+}
+
+// ================================================================
+// Confetti
+// ================================================================
+function burstConfetti(n) {
+  const css = getComputedStyle(document.documentElement);
+  const colors = ["--c-red","--c-orange","--c-amber","--c-green","--c-cyan","--c-blue","--c-violet","--c-pink"]
+    .map(v => css.getPropertyValue(v).trim());
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti";
+    el.style.left = (Math.random() * 100) + "vw";
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDuration = (1.5 + Math.random() * 1.2) + "s";
+    el.style.transform = `rotate(${Math.random()*360}deg)`;
+    if (Math.random() > 0.6) el.style.borderRadius = "50%";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
+// ================================================================
+// Pomodoro
+// ================================================================
+const POMO_DURATIONS = { "focus": 25*60, "short-break": 5*60, "long-break": 15*60 };
+const POMO_LABELS    = { "focus": "Focus", "short-break": "Short break", "long-break": "Long break" };
+
+function checkPomoDailyReset() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (state.pomo.completedDate !== today) {
+    state.pomo.completedToday = 0; state.pomo.completedDate = today; save();
+  }
+}
+function pomoTimeLeft() {
+  if (state.pomo.endsAt) return Math.max(0, Math.ceil((new Date(state.pomo.endsAt).getTime() - Date.now()) / 1000));
+  return state.pomo.remaining;
+}
+function pomoStart()  { state.pomo.endsAt = new Date(Date.now() + state.pomo.remaining * 1000).toISOString(); save(); renderPomo(); }
+function pomoPause()  { if (state.pomo.endsAt) { state.pomo.remaining = pomoTimeLeft(); state.pomo.endsAt = null; save(); renderPomo(); } }
+function pomoReset()  { state.pomo.endsAt = null; state.pomo.remaining = POMO_DURATIONS[state.pomo.mode]; save(); renderPomo(); }
+function pomoComplete() {
+  if (state.pomo.mode === "focus") {
+    state.pomo.completedToday++; state.pomo.cycleCount++;
+    state.pomo.mode = (state.pomo.cycleCount % 4 === 0) ? "long-break" : "short-break";
+    playBeep(800, 0.4); setTimeout(() => playBeep(1000, 0.3), 250);
+  } else {
+    state.pomo.mode = "focus"; playBeep(600, 0.4);
+  }
+  state.pomo.remaining = POMO_DURATIONS[state.pomo.mode]; state.pomo.endsAt = null;
+  save(); burstConfetti(30); renderPomo();
+}
+function pomoSkip() { pomoComplete(); }
+
+function renderPomo() {
+  checkPomoDailyReset();
+  const pomoEl = document.getElementById("pomo");
+  pomoEl.classList.remove("mode-focus","mode-short-break","mode-long-break");
+  pomoEl.classList.add("mode-" + state.pomo.mode);
+  if (state.pomo.collapsed) pomoEl.classList.add("minimal"); else pomoEl.classList.remove("minimal");
+
+  const left = pomoTimeLeft();
+  document.getElementById("pomo-display").textContent   = `${pad(Math.floor(left/60))}:${pad(left%60)}`;
+  document.getElementById("pomo-mode-mini").textContent = POMO_LABELS[state.pomo.mode];
+  document.getElementById("pomo-start").textContent     = state.pomo.endsAt ? "Pause" : "Start";
+  document.getElementById("pomo-stat").textContent      = state.pomo.completedToday === 1 ? "1 done today" : `${state.pomo.completedToday} done today`;
+  const total = POMO_DURATIONS[state.pomo.mode];
+  document.getElementById("pomo-progress").style.width  = ((total - left) / total * 100) + "%";
+
+  const fd = document.getElementById("focus-pomo-display");
+  if (fd) {
+    fd.textContent = `${pad(Math.floor(left/60))}:${pad(left%60)}`;
+    document.getElementById("focus-pomo-mode-text").textContent = POMO_LABELS[state.pomo.mode];
+    document.getElementById("focus-pomo-stat").textContent = state.pomo.completedToday === 1 ? "1 pomodoro today" : `${state.pomo.completedToday} pomodoros today`;
+    document.getElementById("focus-pomo-start").textContent = state.pomo.endsAt ? "Pause" : "Start";
+    const fpomoEl = document.getElementById("focus-pomo");
+    fpomoEl.classList.remove("mode-focus","mode-short-break","mode-long-break");
+    fpomoEl.classList.add("mode-" + state.pomo.mode);
+  }
+}
+function tickPomo() {
+  if (state.pomo.endsAt && pomoTimeLeft() === 0) { pomoComplete(); return; }
+  renderPomo();
+}
+
+let audioCtx = null;
+function playBeep(freq, duration) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = freq; osc.type = "sine";
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+
+document.getElementById("pomo-start").onclick   = () => state.pomo.endsAt ? pomoPause() : pomoStart();
+document.getElementById("pomo-reset").onclick   = pomoReset;
+document.getElementById("pomo-skip").onclick    = pomoSkip;
+document.getElementById("pomo-collapse").onclick = () => { state.pomo.collapsed = !state.pomo.collapsed; save(); renderPomo(); };
+
+// ================================================================
+// Focus Overlay
+// ================================================================
+let focusedExamId = null;
+function openFocus(id)  { focusedExamId = id; renderFocus(); document.getElementById("focus-overlay").classList.add("open"); document.body.style.overflow = "hidden"; }
+function closeFocus()   { focusedExamId = null; document.getElementById("focus-overlay").classList.remove("open"); document.body.style.overflow = ""; }
+document.getElementById("focus-close").onclick = closeFocus;
+document.getElementById("focus-overlay").addEventListener("click", e => { if (e.target.id === "focus-overlay") closeFocus(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && focusedExamId) closeFocus(); });
+
+function updateFocusTimer(deadline) {
+  const d = diff(deadline);
+  const slots = document.querySelectorAll("#focus-content [data-fnum]");
+  if (!slots.length) return;
+  slots[0].textContent = d.past ? "0"  : d.d;
+  slots[1].textContent = d.past ? "00" : pad(d.h);
+  slots[2].textContent = d.past ? "00" : pad(d.m);
+  slots[3].textContent = d.past ? "00" : pad(d.s);
+}
+
+function renderFocus() {
+  if (!focusedExamId) return;
+  const exam = EXAMS.find(e => e.id === focusedExamId);
+  if (!exam) return;
+  const done = !!state.examsDone[exam.id];
+  const d    = diff(exam.deadline);
+  const pp   = prepPct(exam);
+  document.getElementById("focus-card").style.setProperty("--focus-color", exam.color);
+  document.getElementById("focus-content").innerHTML = `
+    <div class="focus-head">
+      <div class="focus-code"><span class="course-dot" style="--dot: ${exam.color}"></span>${exam.code} · ${exam.questions}</div>
+      <h1 class="focus-title">${exam.title}</h1>
+      <div class="focus-when">${fmtRange(exam.start, exam.end)}</div>
+      <div class="focus-where">${exam.location}</div>
+    </div>
+    <div class="focus-timer">
+      <div class="seg"><div class="num" data-fnum>${d.past ? 0 : d.d}</div><div class="lbl">Days</div></div>
+      <div class="colon">:</div>
+      <div class="seg"><div class="num" data-fnum>${d.past ? "00" : pad(d.h)}</div><div class="lbl">Hrs</div></div>
+      <div class="colon">:</div>
+      <div class="seg"><div class="num" data-fnum>${d.past ? "00" : pad(d.m)}</div><div class="lbl">Min</div></div>
+      <div class="colon">:</div>
+      <div class="seg"><div class="num" data-fnum>${d.past ? "00" : pad(d.s)}</div><div class="lbl">Sec</div></div>
+    </div>
+    <div class="focus-notes">${exam.notes}</div>
+    <div class="focus-section-h"><span>Prep checklist</span><span class="pct">${pp}%</span></div>
+    <div class="focus-prep" style="--card-color: ${exam.color}">
+      ${exam.prep.map((p, i) => {
+        const k = `${exam.id}:${i}`, pdone = !!state.prepDone[k];
+        return `<div class="prep-item${pdone ? " done" : ""}" data-focus-prep="${k}"><div class="prep-check"></div><div class="prep-label">${p}</div></div>`;
+      }).join("")}
+    </div>
+    <div class="focus-section-h"><span>Pomodoro</span><span class="pct" id="focus-pomo-stat-h"></span></div>
+    <div class="focus-pomo mode-${state.pomo.mode}" id="focus-pomo">
+      <div class="focus-pomo-display" id="focus-pomo-display">25:00</div>
+      <div class="focus-pomo-info">
+        <div class="focus-pomo-mode"><span id="focus-pomo-mode-text">Focus</span></div>
+        <div class="focus-pomo-stat" id="focus-pomo-stat">0 pomodoros today</div>
+      </div>
+      <div class="focus-pomo-controls">
+        <button class="pomo-btn primary" id="focus-pomo-start">Start</button>
+        <button class="pomo-btn" id="focus-pomo-reset">Reset</button>
+        <button class="pomo-btn" id="focus-pomo-skip">Skip</button>
+      </div>
+    </div>
+    <div class="focus-actions">
+      <button class="btn" data-focus-toggle="${exam.id}">${done ? "↺ Reopen" : "Mark done ✓"}</button>
+    </div>
+  `;
+  document.querySelectorAll("[data-focus-prep]").forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.focusPrep, wasDone = !!state.prepDone[k];
+      toggle("prepDone", k);
+      renderCards(); renderFocus(); renderProgressFooter();
+      if (!wasDone) burstConfetti(10);
+    };
+  });
+  document.querySelector("[data-focus-toggle]").onclick = () => {
+    const wasDone = !!state.examsDone[exam.id];
+    toggle("examsDone", exam.id);
+    renderCards(); renderFocus(); renderProgressFooter(); renderNextUp();
+    if (!wasDone) burstConfetti(60);
+  };
+  document.getElementById("focus-pomo-start").onclick = () => state.pomo.endsAt ? pomoPause() : pomoStart();
+  document.getElementById("focus-pomo-reset").onclick = pomoReset;
+  document.getElementById("focus-pomo-skip").onclick  = pomoSkip;
+  renderPomo();
+}
+
+// ================================================================
+// Init — async, waits for Supabase before first render
+// ================================================================
+async function init() {
+  // Apply theme immediately (no flash)
+  setTheme(state.theme);
+  updateDate();
+  rotateQuote();
+
+  // Load from Supabase
+  const ok = await loadFromSupabase();
+  if (!ok) {
+    document.getElementById("hero-meta").textContent = "Could not connect to Supabase. Check console.";
+  }
+
+  // Hide loading bar
+  document.getElementById("loading-bar").style.display = "none";
+
+  // Render everything
+  renderReminders();
+  renderCards();
+  renderHW();
+  renderProgressFooter();
+  renderNextUp();
+  renderPomo();
+
+  // Start realtime sync
+  subscribeRealtime();
+
+  // Start timers
+  setInterval(tickAllTimers, 1000);
+  setInterval(tickPomo, 1000);
+  setInterval(rotateQuote, 45000);
+  setInterval(updateDate, 60000);
+  setInterval(renderProgressFooter, 30000);
+}
+
+init();
+</script>
+</body>
+</html>
